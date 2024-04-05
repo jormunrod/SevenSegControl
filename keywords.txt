@@ -1,0 +1,9 @@
+#######################################
+# Syntax Coloring Map For SevenSegControl
+#######################################
+
+SevenSegControl  KEYWORD1
+displayNumber    KEYWORD2
+clean            KEYWORD2
+setNumber        KEYWORD2
+displayDigit     KEYWORD2

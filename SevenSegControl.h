@@ -6,6 +6,7 @@
 class SevenSegControl {
   public:
     SevenSegControl(int digitPins[], int segmentPins[], int numDigits);
+    ~SevenSegControl();
     void displayNumber(int number);
   private:
     int* _digitPins;

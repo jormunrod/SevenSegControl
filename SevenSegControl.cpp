@@ -1,15 +1,37 @@
 #include "SevenSegControl.h"
 
+const uint8_t NUMBER_PATTERNS[10] = {
+  0b00111111, // 0
+  0b00000110, // 1
+  0b01011011, // 2
+  0b01001111, // 3
+  0b01100110, // 4
+  0b01101101, // 5
+  0b01111101, // 6
+  0b00000111, // 7
+  0b01111111, // 8
+  0b01101111  // 9
+};
+
 SevenSegControl::SevenSegControl(int digitPins[], int segmentPins[], int numDigits) {
-  _digitPins = digitPins;
-  _segmentPins = segmentPins;
   _numDigits = numDigits;
-  for (int i = 0; i < _numDigits; i++) {
-    pinMode(_digitPins[i], OUTPUT);
+  _digitPins = new int[numDigits];
+  _segmentPins = new int[7]; // Asumiendo 7 segmentos sin incluir el punto decimal
+
+  for (int i = 0; i < numDigits; i++) {
+    _digitPins[i] = digitPins[i];
+    pinMode(digitPins[i], OUTPUT);
   }
-  for (int i = 0; i < 7; i++) { // Asumiendo 7 segmentos sin punto decimal
-    pinMode(_segmentPins[i], OUTPUT);
+
+  for (int i = 0; i < 7; i++) {
+    _segmentPins[i] = segmentPins[i];
+    pinMode(segmentPins[i], OUTPUT);
   }
+}
+
+SevenSegControl::~SevenSegControl() {
+  delete[] _digitPins;
+  delete[] _segmentPins;
 }
 
 void SevenSegControl::clean() {
@@ -26,19 +48,18 @@ void SevenSegControl::setNumber(uint8_t segments) {
 }
 
 void SevenSegControl::displayDigit(int digit, int value) {
-  // Implementa tu lógica para activar un dígito y mostrar un número aquí
+  for (int i = 0; i < _numDigits; i++) {
+    digitalWrite(_digitPins[i], HIGH); // Apaga todos los dígitos primero
+  }
+  digitalWrite(_digitPins[digit], LOW); // Activa el dígito actual
+  setNumber(NUMBER_PATTERNS[value]);
+  delay(5); // Ajusta este valor según sea necesario
 }
 
 void SevenSegControl::displayNumber(int number) {
-  int digitPlace = 0;
-  do {
+  for (int digit = _numDigits - 1; digit >= 0; digit--) {
     int digitValue = number % 10;
-    displayDigit(digitPlace++, digitValue);
+    displayDigit(digit, digitValue);
     number /= 10;
-  } while (number > 0 && digitPlace < _numDigits);
-
-  // Para asegurar que todos los dígitos se muestren por un tiempo visible antes de pasar al siguiente número
-  delay(5);
+  }
 }
-
-// No olvides implementar las funciones para mostrar cada dígito (0-9) usando setNumber.
