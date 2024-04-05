@@ -60,21 +60,33 @@ void SevenSegControl::displayDigit(int digit, int value) {
 }
 
 void SevenSegControl::displayNumber(int number) {
-    int firstDigit = number / 10 % 10;
-    int secondDigit = number % 10;
-
+    static unsigned long lastUpdate = 0;
     unsigned long currentMicros = micros();
-    static unsigned long previousMicros = 0;
+    
+    if (currentMicros - lastUpdate >= _updateInterval) {
+        lastUpdate = currentMicros;
 
-    if (currentMicros - previousMicros >= _updateInterval) {
-        previousMicros = currentMicros;
-
-        static bool toggle = false;
-        if (toggle) {
-            displayDigit(0, firstDigit); // Muestra el primer dígito
-        } else {
-            displayDigit(1, secondDigit); // Muestra el segundo dígito
+        static int currentDigitIndex = 0; // Índice para recorrer los dígitos
+        
+        // Calcula el valor para el dígito actual ajustado para mostrar de derecha a izquierda
+        int positionFromRight = _numDigits - 1 - currentDigitIndex; // Ajusta el índice basado en el número total de dígitos
+        int digitValue = (number / (int)pow(10, positionFromRight)) % 10;
+        
+        // Apaga todos los dígitos antes de encender el actual
+        for (int i = 0; i < _numDigits; i++) {
+            digitalWrite(_digitPins[i], HIGH); // Suponiendo cátodo común
         }
-        toggle = !toggle;
+        
+        // Enciende el dígito actual
+        digitalWrite(_digitPins[currentDigitIndex], LOW);
+        
+        // Muestra el valor en el dígito activo
+        setNumber(NUMBER_PATTERNS[digitValue]);
+        
+        // Prepara el índice para el siguiente dígito en la próxima actualización
+        currentDigitIndex = (currentDigitIndex + 1) % _numDigits;
     }
 }
+
+
+
